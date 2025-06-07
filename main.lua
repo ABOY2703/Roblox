@@ -42,7 +42,7 @@ local countdownText = Instance.new("TextLabel")
 countdownText.Name = "CountdownText"
 countdownText.Size = UDim2.new(0.2, 0, 0.05, 0) -- 20% width, 5% height of screen
 countdownText.Position = UDim2.new(0.5, -countdownText.Size.X.Scale * 0.5 * 100, 0.05, 0) -- Top-center, slightly down
-countdownText.Text = "Loading..."
+countdownText.Text = "Loading..." -- Initial text for the countdown display
 countdownText.Font = Enum.Font.SourceSansBold
 countdownText.TextSize = 24
 countdownText.TextColor3 = Color3.new(1, 1, 1) -- White text
@@ -125,7 +125,23 @@ print("Press 'H' to toggle the countdown display.")
 
 -- Main loop for continuous server hopping
 while true do
-    -- Get the JobId of the server we are currently on.
+    -- Determine a random delay for the *next* hop. This happens first so the countdown can start immediately.
+    local delay_seconds = math.random(300, 600)
+    print(string.format("Next server hop attempt in approx. %.1f minutes (%.0f seconds)...", delay_seconds / 60, delay_seconds))
+
+    -- --- Countdown Logic ---
+    -- This countdown now runs immediately at the start of each loop iteration
+    for i = delay_seconds, 1, -1 do
+        local minutes = math.floor(i / 60)
+        local seconds = i % 60
+        countdownText.Text = string.format("Next Hop: %02d:%02d", minutes, seconds)
+        task.wait(1) -- Update every second
+    end
+    countdownText.Text = "Hopping now..."
+    task.wait(2) -- Small wait before initiating hop
+    -- --- End Countdown Logic ---
+
+    -- Get the JobId of the server we are currently on (after the countdown for the *next* hop has finished).
     local currentJobId = game.JobId
     PlaceId = game.PlaceId -- Ensure PlaceId is correct for the current game instance
 
@@ -154,21 +170,6 @@ while true do
     else
         print("Custom code execution finished.")
     end
-
-    -- Determine a random delay between 5 and 10 minutes (300 to 600 seconds).
-    local delay_seconds = math.random(300, 600)
-    print(string.format("Next server hop attempt in approx. %.1f minutes (%.0f seconds)...", delay_seconds / 60, delay_seconds))
-
-    -- --- Countdown Logic ---
-    for i = delay_seconds, 1, -1 do
-        local minutes = math.floor(i / 60)
-        local seconds = i % 60
-        countdownText.Text = string.format("Next Hop: %02d:%02d", minutes, seconds)
-        task.wait(1) -- Update every second
-    end
-    countdownText.Text = "Hopping now..."
-    task.wait(2) -- Small wait before initiating hop
-    -- --- End Countdown Logic ---
 
     -- Start searching for a new server to hop to.
     print("Searching for available public servers to hop to, prioritizing smaller ones...")
